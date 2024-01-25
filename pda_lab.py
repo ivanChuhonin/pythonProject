@@ -58,7 +58,7 @@ app.layout = html.Div([
     html.Div([
         dcc.Graph(figure={}, id='controls-and-graph'),
         html.Label(['Choose 3 Partners to Compare:'],style={'font-weight': 'bold', "text-align": "center"}),
-        dcc.Dropdown(id='cuisine_one',
+        dcc.Dropdown(id='cuisine_first',
             options=[{'label':x, 'value':x} for x in manufactured_df3['Partner'].unique()],
             value='Netherlands',
             multi=False,
@@ -71,7 +71,7 @@ app.layout = html.Div([
             persistence='string',
             persistence_type='memory'),
 
-        dcc.Dropdown(id='cuisine_two',
+        dcc.Dropdown(id='cuisine_second',
             options=[{'label':x, 'value':x} for x in manufactured_df3['Partner'].unique()],
             value='Switzerland',
             multi=False,
@@ -79,7 +79,7 @@ app.layout = html.Div([
             persistence='string',
             persistence_type='session'),
 
-        dcc.Dropdown(id='cuisine_three',
+        dcc.Dropdown(id='cuisine_third',
             options=[{'label':x, 'value':x} for x in manufactured_df3['Partner'].unique()],
             value='Belgium',
             multi=False,
@@ -88,12 +88,12 @@ app.layout = html.Div([
             persistence_type='local')], className='three columns'),   
 
     html.Div([
-        dcc.Graph(id='our_graph')], className='nine columns'),
+        dcc.Graph(id='our_graphs')], className='nine columns'),
 
     html.Div([
         html.Br(),
         html.Label(['Choose 3 Partners to Compare:'],style={'font-weight': 'bold', "text-align": "center"}),
-        dcc.Dropdown(id='cuisine_one',
+        dcc.Dropdown(id='cuisine_num',
             options=[{'label':x, 'value':x} for x in sugar_df3['Partner'].unique()],
             value='Mongolia',
             multi=False,
@@ -106,7 +106,7 @@ app.layout = html.Div([
             persistence='string',
             persistence_type='memory'),
 
-        dcc.Dropdown(id='cuisine_two',
+        dcc.Dropdown(id='cuisine_numer',
             options=[{'label':x, 'value':x} for x in sugar_df3['Partner'].unique()],
             value='China',
             multi=False,
@@ -114,7 +114,7 @@ app.layout = html.Div([
             persistence='string',
             persistence_type='session'),
 
-        dcc.Dropdown(id='cuisine_three',
+        dcc.Dropdown(id='cuisine_nums',
             options=[{'label':x, 'value':x} for x in sugar_df3['Partner'].unique()],
             value='Turkey',
             multi=False,
@@ -145,15 +145,15 @@ def build_graph(first_cuisine, second_cuisine, third_cuisine, col_chosen):
 
 @app.callback(
      Output(component_id='controls-and-graph', component_property='figure'),
-     [Input('cuisine_one','value'),
-     Input('cuisine_two','value'),
-     Input('cuisine_three','value')]
+     [Input('cuisine_first','value'),
+     Input('cuisine_second','value'),
+     Input('cuisine_third','value')]
 )
 
-def update_graph(first_cuisine, cuisine_two, cuisine_three):
-    df_manuf = manufactured_df3[(manufactured_df3['Partner']==first_cuisine)|
-           (manufactured_df3['Partner']==cuisine_two)|
-           (manufactured_df3['Partner']==cuisine_three)]
+def build_graph(cuisine_first, cuisine_second, cuisine_third):
+    df_manuf = manufactured_df3[(manufactured_df3['Partner']==cuisine_first)|
+           (manufactured_df3['Partner']==cuisine_second)|
+           (manufactured_df3['Partner']==cuisine_third)]
     fig = px.area(x=df_manuf["Year"], y=df_manuf["Trade Value (US$)"], color=df_manuf["Partner"],
                   line_group=df_manuf["Partner"], pattern_shape=df_manuf["Partner"], pattern_shape_sequence=[".", "x", "+"])
     fig.update_layout(yaxis={'title':'Trade Value (US$)'}, xaxis={'title':'Year'},
@@ -162,16 +162,16 @@ def update_graph(first_cuisine, cuisine_two, cuisine_three):
 
 
 @app.callback(
-    Output('our_graph','figure'),
-    [Input('cuisine_one','value'),
-     Input('cuisine_two','value'),
-     Input('cuisine_three','value')]
+    Output('our_graphs','figure'),
+    [Input('cuisine_num','value'),
+     Input('cuisine_numer','value'),
+     Input('cuisine_nums','value')]
 )
 
-def build_graph(first_cuisine, second_cuisine, third_cuisine):
-    dff=sugar_df3[(sugar_df3['Partner']==first_cuisine)|
-           (sugar_df3['Partner']==second_cuisine)|
-           (sugar_df3['Partner']==third_cuisine)]
+def build_graph(cuisine_num, cuisine_numer, cuisine_nums):
+    dff=sugar_df3[(sugar_df3['Partner']==cuisine_num)|
+           (sugar_df3['Partner']==cuisine_numer)|
+           (sugar_df3['Partner']==cuisine_nums)]
 
     fig = px.line(dff, x="Year", y="Trade Value (US$)", color='Partner', height=600)
     fig.update_layout(yaxis={'title':'Trade Value (US$)'},
@@ -180,6 +180,15 @@ def build_graph(first_cuisine, second_cuisine, third_cuisine):
     return fig
 
 
+#if __name__ == '__main__':
+#app.run_server(debug=False)
+
 if __name__ == '__main__':
-    app.run_server(debug=False)
-    
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8052, help="Port number")
+    args = parser.parse_args()
+
+    app.run_server(debug=True, port=args.port)    
+
